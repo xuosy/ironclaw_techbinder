@@ -213,6 +213,18 @@
     const loader = new GLTFLoader();
     loader.load('models/Final.glb', function(gltf) {
       const model = gltf.scene;
+      model.traverse(function(child) {
+        if (child.isMesh) {
+          child.material.transparent = true;
+          
+          // If the material is supposed to be polycarbonate/clear
+          if (child.material.opacity > 0.9) {
+            // Leave opaque parts alone
+          } else {
+            child.material.depthWrite = false; // Fixes rendering order issues
+          }
+        }
+      });
       scene.add(model);
       scene.remove(placeholder); // Remove the orange box
       
