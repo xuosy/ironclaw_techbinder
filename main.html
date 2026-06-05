@@ -203,9 +203,9 @@
     scene.add(placeholder);
 
     // 5. Load the actual CAD Model
-    /* // UNCOMMENT THIS BLOCK ONCE YOU EXPORT YOUR .GLB FILE FROM ONSHAPE/FUSION 360
+     // UNCOMMENT THIS BLOCK ONCE YOU EXPORT YOUR .GLB FILE FROM ONSHAPE/FUSION 360
     const loader = new GLTFLoader();
-    loader.load('models/drivetrain.glb', function(gltf) {
+    loader.load('models/lowValence.gltf', function(gltf) {
       scene.add(gltf.scene);
       scene.remove(placeholder); // Remove the orange box
       
@@ -216,7 +216,7 @@
       gltf.scene.position.y += (gltf.scene.position.y - center.y);
       gltf.scene.position.z += (gltf.scene.position.z - center.z);
     });
-    */
+    
 
     // 6. Animation Loop
     function animate() {
