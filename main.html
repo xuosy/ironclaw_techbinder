@@ -162,7 +162,14 @@
       </div>
     </div>
   </section>
-
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.150.1/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.150.1/examples/jsm/"
+      }
+    }
+  </script>
   <script type="module">
     import * as THREE from 'https://unpkg.com/three@0.150.1/build/three.module.js';
     import { OrbitControls } from 'https://unpkg.com/three@0.150.1/examples/jsm/controls/OrbitControls.js';
