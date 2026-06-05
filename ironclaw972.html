@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iron Claw 972 | FRC Team</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --orange: #f04e00;
+      --orange-light: #ff6a1f;
+      --orange-pale: #fff2ec;
+      --orange-mid: #ffe0cc;
+      --charcoal: #1a1a1a;
+      --ink: #2d2d2d;
+      --slate: #4a4a4a;
+      --mid: #888;
+      --pale: #f5f3f0;
+      --white: #ffffff;
+      --border: #e8e4df;
+      --border-dark: #d4cfc9;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Barlow', sans-serif;
+      background: var(--white);
+      color: var(--ink);
+      overflow-x: hidden;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      height: 60px;
+      background: var(--white);
+      border-bottom: 1.5px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 1.3rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--charcoal);
+    }
+    .nav-logo em { color: var(--orange); font-style: normal; }
+    .nav-links { display: flex; gap: 4px; list-style: none; }
+    .nav-links a {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--mid);
+      padding: 6px 12px;
+      border-radius: 4px;
+      transition: color 0.18s, background 0.18s;
+    }
+    .nav-links a:hover { color: var(--orange); background: var(--orange-pale); }
+
+    /* ─── HERO ─── */
+    #hero {
+      background: var(--orange);
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: 80px 60px 60px;
+      gap: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    #hero::after {
+      content: '972';
+      position: absolute;
+      bottom: -40px; right: -20px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 320px;
+      color: rgba(255,255,255,0.06);
+      line-height: 1;
+      pointer-events: none;
+      user-select: none;
+    }
+    .hero-text { position: relative; z-index: 2; }
+    .hero-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 20px;
+    }
+    .hero-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: clamp(4.5rem, 8vw, 8rem);
+      line-height: 0.88;
+      letter-spacing: -1px;
+      color: var(--white);
+      margin-bottom: 28px;
+      text-transform: uppercase;
+    }
+    .hero-desc {
+      font-size: 1.1rem;
+      line-height: 1.65;
+      color: rgba(255,255,255,0.82);
+      max-width: 460px;
+      margin-bottom: 40px;
+    }
+    .stat-row { display: flex; gap: 0; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,0.25); padding-top: 32px; }
+    .stat {
+      flex: 1;
+      min-width: 100px;
+      padding-right: 24px;
+      border-right: 1px solid rgba(255,255,255,0.2);
+      margin-right: 24px;
+    }
+    .stat:last-child { border-right: none; margin-right: 0; }
+    .stat-num {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 2.4rem;
+      color: var(--white);
+      line-height: 1;
+    }
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+      margin-top: 4px;
+    }
+
+    /* 3D viewer */
+    #canvas-container {
+      height: 560px;
+      background: rgba(0,0,0,0.15);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: grab;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    #canvas-container:active { cursor: grabbing; }
+    .viewer-hint {
+      position: absolute;
+      bottom: 14px; right: 14px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.4);
+      pointer-events: none;
+    }
+    .viewer-label {
+      position: absolute;
+      top: 14px; left: 14px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+      pointer-events: none;
+    }
+
+    /* ─── SPECS BAND ─── */
+    #specs {
+      background: var(--charcoal);
+      padding: 64px 60px;
+    }
+    .specs-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--orange-light);
+      margin-bottom: 32px;
+    }
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: #333;
+    }
+    .spec-cell {
+      background: var(--charcoal);
+      padding: 28px 24px;
+      transition: background 0.2s;
+    }
+    .spec-cell:hover { background: #222; }
+    .spec-cell-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 8px;
+    }
+    .spec-cell-value {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1.8rem;
+      color: var(--white);
+      line-height: 1;
+    }
+    .spec-cell-sub { font-size: 0.8rem; color: #444; margin-top: 5px; }
+
+    /* ─── SECTION BASE ─── */
+    .section {
+      padding: 96px 60px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+    .section-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--orange);
+      background: var(--orange-pale);
+      border: 1px solid var(--orange-mid);
+      padding: 5px 12px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+    .section-h {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2.8rem, 4.5vw, 4.5rem);
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+      color: var(--charcoal);
+      line-height: 0.95;
+      margin-bottom: 20px;
+    }
+    .section-body {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--slate);
+      max-width: 600px;
+      margin-bottom: 52px;
+    }
+
+    /* ─── SUBSYSTEM CARDS ─── */
+    .sub-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .sub-card {
+      background: var(--pale);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.25s, transform 0.2s, box-shadow 0.2s;
+    }
+    .sub-card:hover {
+      border-color: var(--orange);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 32px rgba(240,78,0,0.1);
+    }
+    .sub-num {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 4rem;
+      color: rgba(240,78,0,0.07);
+      line-height: 1;
+      position: absolute;
+      top: 12px; right: 16px;
+    }
+    .sub-dot {
+      width: 36px; height: 36px;
+      background: var(--orange);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+    .sub-dot svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2; }
+    .sub-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--charcoal);
+      margin-bottom: 10px;
+    }
+    .sub-desc { font-size: 0.87rem; line-height: 1.65; color: var(--slate); }
+    .sub-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 14px; }
+    .tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      background: var(--orange-pale);
+      border: 1px solid var(--orange-mid);
+      border-radius: 100px;
+      color: var(--orange);
+    }
+
+    /* ─── ORANGE DIVIDER BAND ─── */
+    .band {
+      background: var(--orange-pale);
+      border-top: 2px solid var(--orange-mid);
+      border-bottom: 2px solid var(--orange-mid);
+      padding: 40px 60px;
+      display: flex;
+      align-items: center;
+      gap: 60px;
+      flex-wrap: wrap;
+    }
+    .band-stat {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .band-num {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 3.5rem;
+      color: var(--orange);
+      line-height: 1;
+    }
+    .band-unit {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #a0886e;
+    }
+
+    /* ─── TABS ─── */
+    #tabs-section { background: var(--pale); border-top: 1.5px solid var(--border); }
+    .tab-nav {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 60px;
+      display: flex;
+      gap: 0;
+      border-bottom: 1.5px solid var(--border);
+    }
+    .tab-btn {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 18px 28px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -1.5px;
+      color: var(--mid);
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .tab-btn:hover { color: var(--ink); }
+    .tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); }
+
+    .tab-panels { max-width: 1280px; margin: 0 auto; padding: 60px 60px; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: grid; grid-template-columns: 1.1fr 1fr; gap: 64px; align-items: start; }
+
+    .panel-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 12px;
+    }
+    .panel-h {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 2.8rem;
+      text-transform: uppercase;
+      color: var(--charcoal);
+      line-height: 0.95;
+      margin-bottom: 20px;
+    }
+    .panel-body { font-size: 0.95rem; line-height: 1.72; color: var(--slate); margin-bottom: 18px; }
+    .panel-h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--charcoal);
+      margin: 24px 0 10px;
+      border-left: 3px solid var(--orange);
+      padding-left: 12px;
+    }
+    .panel-list { list-style: none; }
+    .panel-list li {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+      color: var(--slate);
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .panel-list li:last-child { border-bottom: none; }
+    .panel-list li::before { content: '→'; color: var(--orange); flex-shrink: 0; font-weight: 700; }
+
+    .panel-img-wrap {
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1.5px solid var(--border-dark);
+      background: var(--white);
+    }
+    .panel-img-wrap img {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s;
+    }
+    .panel-img-wrap:hover img { transform: scale(1.03); }
+    .panel-img-caption {
+      padding: 9px 14px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 1px;
+      color: var(--mid);
+      background: var(--pale);
+      border-top: 1px solid var(--border);
+    }
+
+    .code-block {
+      background: var(--charcoal);
+      border-radius: 8px;
+      padding: 20px 22px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.72rem;
+      line-height: 1.75;
+      color: #aaa;
+      overflow-x: auto;
+      margin-top: 16px;
+    }
+    .code-block .kw { color: #f9a875; }
+    .code-block .fn { color: #82aaff; }
+    .code-block .cmt { color: #4a5568; }
+
+    .info-box {
+      background: var(--white);
+      border: 1.5px solid var(--border-dark);
+      border-radius: 10px;
+      padding: 22px;
+      margin-top: 16px;
+    }
+    .info-box-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 14px;
+    }
+
+    /* ─── GAME CARDS ─── */
+    #game-section { background: var(--white); }
+    .game-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .game-card {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .game-card-head {
+      background: var(--orange);
+      padding: 14px 20px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--white);
+    }
+    .game-card-body { padding: 18px 20px; font-size: 0.88rem; line-height: 1.65; color: var(--slate); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--charcoal);
+      padding: 40px 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .footer-logo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 1.5rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #fff;
+    }
+    .footer-logo em { color: var(--orange); font-style: normal; }
+    footer p { font-family: 'Space Mono', monospace; font-size: 0.6rem; letter-spacing: 1px; color: #555; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 1050px) {
+      #hero { grid-template-columns: 1fr; padding: 90px 28px 40px; }
+      #canvas-container { height: 360px; }
+      #specs { padding: 40px 28px; }
+      .specs-grid { grid-template-columns: repeat(2,1fr); }
+      .section { padding: 60px 28px; }
+      .sub-grid { grid-template-columns: 1fr; }
+      .band { padding: 28px; gap: 32px; }
+      .tab-nav { padding: 0 28px; overflow-x: auto; }
+      .tab-panels { padding: 40px 28px; }
+      .tab-panel.active { grid-template-columns: 1fr; }
+      .game-grid { grid-template-columns: 1fr; }
+      footer { flex-direction: column; padding: 28px; }
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+    }
+
+    /* scroll reveal */
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.55s ease, transform 0.55s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Iron<em>Claw</em> 972</div>
+  <ul class="nav-links">
+    <li><a href="#hero">Home</a></li>
+    <li><a href="#specs">Specs</a></li>
+    <li><a href="#subsystems">Subsystems</a></li>
+    <li><a href="#tabs-section">Disciplines</a></li>
+    <li><a href="#game-section">Game</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div id="hero">
+  <div class="hero-text reveal">
+    <p class="hero-eyebrow">Los Gatos High School · FRC Team · 2026 Season</p>
+    <h1 class="hero-title">Iron<br>Claw<br>972</h1>
+    <p class="hero-desc">
+      Fielding <strong>Valence</strong> — a 111.6 lb precision robot capable of scoring fuel at 15 balls/sec, tracking the hub with a 450° turret, and dominating the Rebuilt field. Daly Division Finalists at the 2026 World Championship.
+    </p>
+    <div class="stat-row">
+      <div class="stat">
+        <div class="stat-num">111.6<small style="font-size:1.1rem"> lb</small></div>
+        <div class="stat-label">Robot Weight</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">15<small style="font-size:1.1rem"> BPS</small></div>
+        <div class="stat-label">Fuel Rate</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">450<small style="font-size:1.1rem">°</small></div>
+        <div class="stat-label">Turret</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">2002</div>
+        <div class="stat-label">Founded</div>
+      </div>
+    </div>
+  </div>
+  <div id="canvas-container">
+    <span class="viewer-label">VALENCE · 3D CAD MODEL</span>
+    <span class="viewer-hint">Drag to rotate · Scroll to zoom</span>
+  </div>
+</div>
+
+<!-- SPECS -->
+<div id="specs">
+  <p class="specs-label">2026 Robot Specifications — "Valence"</p>
+  <div class="specs-grid">
+    <div class="spec-cell">
+      <div class="spec-cell-label">Drivetrain</div>
+      <div class="spec-cell-value" style="color:var(--orange-light)">MK5n</div>
+      <div class="spec-cell-sub">SDS Swerve · R1 Ratio · Kraken x60 Drive</div>
+    </div>
+    <div class="spec-cell">
+      <div class="spec-cell-label">Frame Size</div>
+      <div class="spec-cell-value" style="color:var(--orange-light)">26.5"</div>
+      <div class="spec-cell-sub">Square base · 106" perimeter · 1/16 Al 6061</div>
+    </div>
+    <div class="spec-cell">
+      <div class="spec-cell-label">Starting Height</div>
+      <div class="spec-cell-value" style="color:var(--orange-light)">21.5"</div>
+      <div class="spec-cell-sub">Compact trench-capable profile</div>
+    </div>
+    <div class="spec-cell">
+      <div class="spec-cell-label">Vision Cameras</div>
+      <div class="spec-cell-value" style="color:var(--orange-light)">4 CAM</div>
+      <div class="spec-cell-sub">2× Orange Pi 5 · PhotonVision · Kalman fusion</div>
+    </div>
+    <div class="spec-cell">
+      <div class="spec-cell-label">Ball Velocity</div>
+      <div class="spec-cell-value" style="color:var(--orange-light)">14 m/s</div>
+      <div class="spec-cell-sub">2× Kraken x60 · ~25J energy per ball</div>
+    </div>
+    <div class="spec-cell">
+      <div class="spec-cell-label">Flywheel RPM</div>
+      <div class="spec-cell-value" style="color:var(--orange-light)">5,350</div>
+      <div class="spec-cell-sub">4" Fairlane wheel · Cat Tongue Grip tape</div>
+    </div>
+    <div class="spec-cell">
+      <div class="spec-cell-label">CAN Buses</div>
+      <div class="spec-cell-value" style="color:var(--orange-light)">3×</div>
+      <div class="spec-cell-sub">Isolated: Drivetrain · Subsystems · LED</div>
+    </div>
+    <div class="spec-cell">
+      <div class="spec-cell-label">2026 Awards</div>
+      <div class="spec-cell-value" style="color:var(--orange-light)">2 ★</div>
+      <div class="spec-cell-sub">Industrial Design · Quality · Daly Finalists</div>
+    </div>
+  </div>
+</div>
+
+<!-- STAT BAND -->
+<div class="band">
+  <div class="band-stat"><div class="band-num">15</div><div class="band-unit">balls<br>per sec</div></div>
+  <div class="band-stat"><div class="band-num">450°</div><div class="band-unit">turret<br>rotation</div></div>
+  <div class="band-stat"><div class="band-num">106"</div><div class="band-unit">frame<br>perimeter</div></div>
+  <div class="band-stat"><div class="band-num">14m/s</div><div class="band-unit">ball<br>velocity</div></div>
+  <div class="band-stat"><div class="band-num">4</div><div class="band-unit">vision<br>cameras</div></div>
+  <div style="margin-left:auto;">
+    <p style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.6rem;text-transform:uppercase;letter-spacing:1px;color:var(--charcoal);">Daly Division<br>Finalists</p>
+    <p style="font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:#a0886e;margin-top:4px;">2026 World Championship</p>
+  </div>
+</div>
+
+<!-- SUBSYSTEMS -->
+<div id="subsystems" style="background:var(--white);">
+  <div class="section">
+    <span class="section-tag reveal">Robot Architecture</span>
+    <h2 class="section-h reveal">Subsystems</h2>
+    <p class="section-body reveal">Every subsystem of Valence was engineered for modularity — serviceable in 15 minutes or less, with 3 or fewer degrees of freedom above the drivetrain. Built for predictability, reliability, and high scoring.</p>
+    <div class="sub-grid">
+      <div class="sub-card reveal">
+        <div class="sub-num">4.1</div>
+        <div class="sub-dot"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg></div>
+        <div class="sub-title">Drivetrain &amp; CSB</div>
+        <div class="sub-desc">SDS MK5n swerve with Kraken x60 drive and x44 steer at R1 gearing. Inverted Control Systems Board (used since 2023) maximizes top-deck space. Three isolated CAN buses prevent cascading failures across drivetrain, subsystems, and LEDs.</div>
+        <div class="sub-tags"><span class="tag">Kraken x60</span><span class="tag">CANivore</span><span class="tag">Strain Relief</span><span class="tag">Molex</span></div>
+      </div>
+      <div class="sub-card reveal">
+        <div class="sub-num">4.2</div>
+        <div class="sub-dot"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <div class="sub-title">Intake &amp; Store</div>
+        <div class="sub-desc">Touch-it-own-it rack &amp; pinion hopper powered by Kraken x44s at 4.8:1. A 1.5" roller at 2:1 gives 2× surface speed of the drivetrain. Impact-resistant polycarbonate design with surgical tubing kicker for consistent fuel backing.</div>
+        <div class="sub-tags"><span class="tag">Rack &amp; Pinion</span><span class="tag">Polycarbonate</span><span class="tag">Motion Magic</span></div>
+      </div>
+      <div class="sub-card reveal">
+        <div class="sub-num">4.3</div>
+        <div class="sub-dot"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+        <div class="sub-title">Dye Rotor</div>
+        <div class="sub-desc">Kraken x60 with 27:1 reduction drives the indexer tube; 1:17.1 overdrive powers 2" rollers. 8-fuel racetrack preloads game pieces. Jam detection via current-spike debouncing triggers auto-reverse. Ball counting via velocity threshold — no physical sensors needed.</div>
+        <div class="sub-tags"><span class="tag">MaxPlanetary</span><span class="tag">27:1</span><span class="tag">Auto-Unjam</span></div>
+      </div>
+      <div class="sub-card reveal">
+        <div class="sub-num">4.4</div>
+        <div class="sub-dot"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></div>
+        <div class="sub-title">Turreted Shooter</div>
+        <div class="sub-desc">Belt-driven turret at 28:1 through MaxPlanetary rotates 450°, continuously tracking the hub. Two 7" x-contact bearings handle thrust load. Two Kraken x60s launch fuel at 5,350 RPM (~14 m/s). Score-on-the-Move uses a 0.3s phase-shift to compensate for robot velocity.</div>
+        <div class="sub-tags"><span class="tag">450° Turret</span><span class="tag">SOTM</span><span class="tag">Phase Shift</span><span class="tag">14 m/s</span></div>
+      </div>
+      <div class="sub-card reveal">
+        <div class="sub-num">4.5</div>
+        <div class="sub-dot"><svg viewBox="0 0 24 24"><path d="M1 6s2-2 6-2 8 4 12 4 6-2 6-2v12s-2 2-6 2-8-4-12-4-6 2-6 2V6z"/></svg></div>
+        <div class="sub-title">Vision System</div>
+        <div class="sub-desc">Four 100fps global-shutter cameras across two Orange Pi 5 co-processors. PhotonVision generates pose via multi-tag pnp algorithm. WPILib Kalman filter fuses vision with odometry. Slip detection at ≈0.3m triggers increased vision trust weighting.</div>
+        <div class="sub-tags"><span class="tag">PhotonVision</span><span class="tag">AprilTags</span><span class="tag">Kalman</span><span class="tag">Orange Pi 5</span></div>
+      </div>
+      <div class="sub-card reveal">
+        <div class="sub-num">8.0</div>
+        <div class="sub-dot"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+        <div class="sub-title">Scouting App</div>
+        <div class="sub-desc">React/Firebase web app uses OCR on scoreboard video to extract per-robot balls-per-second metrics. Includes Timer Scout, Video Scout, and AI Analytics. Data visualized through Recharts with radar and line chart views per team.</div>
+        <div class="sub-tags"><span class="tag">React</span><span class="tag">Firebase</span><span class="tag">OCR</span><span class="tag">AI Analytics</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div id="tabs-section">
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="cad">CAD</button>
+    <button class="tab-btn" data-tab="machining">Machining</button>
+    <button class="tab-btn" data-tab="software">Software &amp; Vision</button>
+    <button class="tab-btn" data-tab="electrical">Electrical &amp; Control</button>
+  </div>
+  <div class="tab-panels">
+
+    <!-- CAD -->
+    <div class="tab-panel active" id="tab-cad">
+      <div>
+        <p class="panel-eyebrow">How do we start CAD?</p>
+        <h2 class="panel-h">Computer-Aided Design</h2>
+        <p class="panel-body">Parts are built fast, tested immediately, and changes are made on the spot to see what works and what doesn't. The pieces aren't perfect — they're made of crude objects like wood and duct tape. However, this quick approach helps us understand real-world performance versus numbers, refine mechanisms, and solve obvious problems early. This saves time, money, and much effort later through the season.</p>
+        <p class="panel-body">Once a design proves effective, we transfer it into CAD for precise modeling and further prototyping.</p>
+        <p class="panel-h3">What does the CAD process look like?</p>
+        <p class="panel-body">Once a prototype is proven, we recreate it in CAD to build a precise and fully defined model. We refine dimensions, improve geometry, and ensure all components fit together correctly. This acts as a framework for the overall robot design, allowing us to visualize how everything fits and make adjustments before manufacturing.</p>
+        <ul class="panel-list">
+          <li>Rapid physical prototyping with wood and duct tape before committing to CAD</li>
+          <li>Full robot layout assembly to verify fit and catch interference early</li>
+          <li>3D printed parts for camera mounting and custom components</li>
+          <li>Drivetrain CAD modeled specifically for intentional wire routing and CAN organization</li>
+          <li>Continuous evolution — quick CAD adjustments as competition season progresses</li>
+        </ul>
+      </div>
+      <div>
+        <div class="panel-img-wrap">
+          <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUC2UR-g1VVnsC1gTI_WZ4hSDwwveyi9dXFZ1DqwV34KLdTV6zks4j287WOZFPeABZTk2AXSOGpuoZG-othTC6FEU3jMfwRffepWNcXM28hbsQZhTDZOgfQNAAbAueHmr5iZCbO79MgRaF5sq_PWp6wetLk1Z-VGu14zccD72fL6seQhCuB88vQvB8I3evtz4lu7NVKKSDr87uBRrChwPsibYYW350sQWrTAPQTURps=w1280" alt="2026 Robot CAD" onerror="this.style.display='none'">
+          <div class="panel-img-caption">2026 Valence — full assembly CAD in Onshape</div>
+        </div>
+        <div class="panel-img-wrap" style="margin-top:14px;">
+          <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUCi-tQv8x7Knz1MLEhp5CB2Pts1m_lr8st-5whPl5qPcjPJGKIdwojCJbe7B8eIbZj6IkwURdAfKtpJBJrvnTtMaKenZorII4JtRpzrKPgsVWn8ai3_uHp7GCJVXRzgVrgHsoMBupKjfw6P0tka56o56PNJgkSgfPNpnnw3T3FdmlXO19Oy38RaMuvLPXCZK6vAAM4rZfrMBltFDw5aO-sG0dWIXFBtn4OozNkwZ5w=w1280" alt="3D Printed Camera Mount" onerror="this.style.display='none'">
+          <div class="panel-img-caption">3D printed camera mount — precision fit to robot superstructure</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MACHINING -->
+    <div class="tab-panel" id="tab-machining">
+      <div>
+        <p class="panel-eyebrow">Idea to Iteration</p>
+        <h2 class="panel-h">Manufacturing</h2>
+        <p class="panel-body">Iron Claw 972 begins every project with an idea, which we refine and develop into a detailed design and prototype. Through iteration and ideating, we turn concepts into real and functional parts. We rigorously test each component, checking performance and continually making improvements to ensure everything works as efficiently and reliably as possible. Our team takes ideas from concept all the way to field-ready systems.</p>
+        <p class="panel-h3">Design to manufacturing</p>
+        <p class="panel-body">Before manufacturing begins, our team uses CAD software to model each part and subsystem in detail. This allows us to visualize how components will fit together, check clearances, and identify potential issues early. We iterate on designs quickly, making adjustments based on testing, feedback, and performance goals. By fully developing our ideas in CAD first, we ensure our parts are precise, efficient, and ready for manufacturing.</p>
+        <p class="panel-h3">How do we make our parts?</p>
+        <p class="panel-body">Once designs are finalized, our team moves into manufacturing, where digital models are turned into physical parts. Using a combination of manual tools and fabrication techniques, we produce components with quality. Some parts are simulated using CAM software, which generates the toolpaths and instructions needed to machine the part accurately. The finalized program is uploaded to our CNC machine. All round objects or shafts are done on a lathe and most flat objects are cut or CNC'd.</p>
+        <ul class="panel-list">
+          <li>CAM-generated toolpaths for CNC machine precision</li>
+          <li>Lathes for all round objects and shafts</li>
+          <li>Band saws and mills for flat profiles and structural parts</li>
+          <li>Tight loop between prototype → test → CAD → machine → repeat</li>
+          <li>All subsystems designed for 15-minute field serviceability</li>
+        </ul>
+      </div>
+      <div>
+        <div class="panel-img-wrap">
+          <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUBH4S-yXqR8OcQzEh-j8MjNey83tSzLpCWxKYuF5XfHHGBDezHVLj5p6N0ij-EBfqAL8N98i-rkumDPnwoJpshWg-dxHmkwQbkwJXm-x25T4edcKu5eUExN9H7gGjUPj_1JzLQA7V8-r9NU87Rb6vFnogfP4qszxhw055ZH_dborbbZFMkqW1zCo_vz1Rf4BgHDySMhXwI9nLJPG3-p4WFxi26NDEmRYRAuUfUs=w1280" alt="CNC Machining" onerror="this.style.display='none'">
+          <div class="panel-img-caption">CNC machining aluminum components for the drivetrain</div>
+        </div>
+        <div class="panel-img-wrap" style="margin-top:14px;">
+          <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUCwoXzZwVYtjNpegVOtxfSByTvasSis1UPeprz3iCs6Dv3yTy44uTcRBBmhzMT8xAH1jpO4sj6EnW01pW7Qp5YB4ogwKYQuanENLEM4wqbEvbSjNqTlRyZDSS5Cv7IG7LVx8GpO6LT72448PKPUTy8irzazYF8uHoY-vM3D1NnnoPFempBtJ4diJ0BETuUoZTrUJM7pyays1qDRC7iIjo2kCyVVnnbTkbfijD7YuQk=w1280" alt="Machining Process" onerror="this.style.display='none'">
+          <div class="panel-img-caption">From raw stock to competition-ready component</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOFTWARE -->
+    <div class="tab-panel" id="tab-software">
+      <div>
+        <p class="panel-eyebrow">Hardware to Software</p>
+        <h2 class="panel-h">Software &amp; Vision</h2>
+        <p class="panel-body">The hardware setup prioritizes performance and reliability. Each pair of cameras connects to an Orange Pi 5, allowing for fast onboard processing of vision data. A Redux Voltage Regulator ensures stable power delivery, protecting sensitive electronics with over-voltage, under-voltage, and over-current safeguards. The cameras are 100fps global shutter modules, which reduce motion blur for consistent AprilTag detection during fast robot movement.</p>
+        <p class="panel-h3">Swerve &amp; motion control</p>
+        <p class="panel-body">The robot uses WPILib swerve libraries controlling four independently rotating modules for field-centric driving. Each module uses PID feedback with feedforward (kS, kV, kA). CTRE Phoenix odometry threading runs at high frequency, improving position tracking during fast motion. A modified Team 254 SwerveSetpointGenerator limits acceleration to reduce wheel slip and prevent tipping.</p>
+        <p class="panel-h3">Vision &amp; pose fusion</p>
+        <p class="panel-body">PhotonVision generates pose via multi-tag pnp on coprocessor, with lowest-ambiguity single-tag as fallback. WPILib's SwerveDrivePoseEstimator fuses vision with drivetrain odometry via Kalman filter. When slip is detected at ≈0.3m, standard deviations increase to trust vision more heavily.</p>
+        <p class="panel-h3">Driver assists</p>
+        <ul class="panel-list">
+          <li>Trench assist: aligns to nearest 180°, zeroes Y-axis, aggressive PID to thread trench smoothly</li>
+          <li>Passive alignment: correction speed added to driver input based on target pose deviation</li>
+          <li>Score on the Move: 0.3s phase-shift prediction accounts for robot velocity at shot time</li>
+          <li>Auto hood retract approaching trench · X-wheel defensive lock · Alliance-aware controls</li>
+        </ul>
+        <div class="code-block">
+<span class="cmt">// Initialize gyro for robot heading</span>
+gyro = <span class="kw">new</span> <span class="fn">Pigeon2</span>();
+
+<span class="cmt">// Create swerve modules</span>
+modules = { FRONT_LEFT, FRONT_RIGHT,
+            BACK_LEFT,  BACK_RIGHT };
+
+<span class="cmt">// Enable vision-based pose updates</span>
+vision = <span class="kw">new</span> <span class="fn">VisionSystem</span>();
+
+<span class="kw">if</span> (RobotBase.<span class="fn">isReal</span>())
+    <span class="fn">useRealModules</span>();
+<span class="kw">else</span>
+    <span class="fn">useSimulatedModules</span>();
+        </div>
+      </div>
+      <div>
+        <div class="panel-img-wrap">
+          <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUBCnJ1CQyjkP5E78NEJlCCVQZVVbgEaT7yuWZhIgJFKumtuZD6EbE8XYLG5Qfw2r0k7dIYwHIhDZMvM8Cu1wV23BcZtab1_NStF0Lgfo3ONwu2aqWOFzyeOo3iI9I2IKIbP2YR24BEfMYBGaNQUq1zItmfXWEw6nP9SXKVMmY60k1XFFV_vGPsn4CwSgTdkcV8lPoNbPIyok8_eGot6VsWBvr1ZquG4nzQlMcft=w1280" alt="Vision System" onerror="this.style.display='none'">
+          <div class="panel-img-caption">PhotonVision dashboard — 4 camera feeds · AprilTag detection active</div>
+        </div>
+        <div class="info-box">
+          <p class="info-box-label">Vision Hardware</p>
+          <ul class="panel-list">
+            <li>2× Orange Pi 5 — RK3588S 8-core · 16GB LPDDR4 RAM · Gigabit Ethernet</li>
+            <li>4× 100fps Mono Global Shutter USB Cameras · 720P OV9281 · Low Distortion M12 Lens</li>
+            <li>Redux Voltage Regulator · 5.3–16V in · 5V 4A out · Triple rail protection (OVP/UVP/OCP)</li>
+            <li>Both camera mounts on back — one backward-facing, one angled forward per mount</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ELECTRICAL -->
+    <div class="tab-panel" id="tab-electrical">
+      <div>
+        <p class="panel-eyebrow">Planning First</p>
+        <h2 class="panel-h">Electrical &amp; Control Systems</h2>
+        <p class="panel-body">Assembly is closely coordinated with wiring for efficiency and accessibility throughout the build process. Rather than completing wiring after the robot is fully assembled, electrical work is done alongside assembly. This allows the control systems to be routed properly before spaces become difficult to reach and prevents issues caused by blocked access points.</p>
+        <p class="panel-body">Planning ahead is critical, as poor timing or coordination can lead to longer wire lengths, messy routing, unsecured connections, and an increased risk of failure. By coordinating assembly and control systems, we avoid problems that arise when trying to wire a fully built robot.</p>
+        <p class="panel-h3">Electrical &amp; wiring</p>
+        <p class="panel-body">During assembly, wiring is done to maintain precision and organization. Wires are connected on one end, routed along their intended path, and then cut to the exact required length before final connection. This minimizes waste and ensures clean, secure layouts. Fully wiring a competition robot can take many hours, especially in dense areas like the main control board.</p>
+        <p class="panel-h3">Working in parallel</p>
+        <p class="panel-body">By coordinating assembly and control systems, 972 ensures that components remain easily accessible, wiring paths are clean, and potential issues are caught early. This reduces the need to disassemble parts later, saving time and preventing possible damage. Parallel work also allows faster iteration as mechanical and electrical systems can be changed together.</p>
+        <ul class="panel-list">
+          <li>Inverted CSB layout since 2023 — maximizes top-deck robot space for subsystems</li>
+          <li>Strain relief via ziptie mounts near all connector ports — reduces wire movement and failure risk</li>
+          <li>3 isolated CAN buses: drivetrain CANivore, subsystem CANivore, RoboRio loop for LEDs</li>
+          <li>Power poles on all motors · Molex connectors replacing SM connectors</li>
+          <li>Every drivetrain wire secured to restrict movement without crushing insulation</li>
+          <li>Weights: CSB+wiring 17.1 lb · Bumpers 13.9 lb · Drivetrain 28.4 lb</li>
+        </ul>
+      </div>
+      <div>
+        <div class="panel-img-wrap">
+          <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUDjsu5JytCMYb04qbcnz2SCbNHKQQtOLt5j_DRrlKh8jBc_oYm_5xIpolOih1qsSnfv6Tgj_PTz6lH-WQp9LKiav2nAcjpYGElGQc8sqdMw062izYdWCM9UAp0C_TzY7f7b0MSEM2RiFZ9jbn1SNoxvgVuu2CJYM3iyywaaPCO_rVtvEp8d6vZa5AdS8PHUq5pDNP_zrsSBW6mPYnLJmJ-UWJz6OKgv0R4CA5Nla5c=w1280" alt="Control Systems Board" onerror="this.style.display='none'">
+          <div class="panel-img-caption">Inverted CSB — redesigned for MK5n modules · intentional CAN and power routing</div>
+        </div>
+        <div class="info-box">
+          <p class="info-box-label">CAN Bus Architecture</p>
+          <ul class="panel-list">
+            <li><strong>CANivore #1</strong> — Dedicated drivetrain loop · immune to subsystem failures</li>
+            <li><strong>CANivore #2</strong> — All robot subsystems · isolated failure domain</li>
+            <li><strong>RoboRio CAN</strong> — LED strip control · indicators survive both CANivore failures</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- GAME OVERVIEW -->
+<div id="game-section">
+  <div class="section">
+    <span class="section-tag reveal">2026 Season</span>
+    <h2 class="section-h reveal">REBUILT — Game Overview</h2>
+    <p class="section-body reveal">In REBUILT presented by Haas, two competing alliances score fuel, cross obstacles, and climb the tower. Alliance hubs dynamically shift between active and inactive based on autonomous performance, rewarding the team that wins auto.</p>
+    <div class="game-grid">
+      <div class="game-card reveal">
+        <div class="game-card-head">Autonomous · 20s</div>
+        <div class="game-card-body">Robots autonomously score fuel into their hub without driver input. Fuel can be pre-loaded, obtained from human players, collected at the depot, or picked up throughout the center of the field. Winning auto activates the opposing alliance's hub, giving a strategic fuel-shuttling advantage in the teleop period.</div>
+      </div>
+      <div class="game-card reveal">
+        <div class="game-card-head">TeleOp · 2m 20s</div>
+        <div class="game-card-body">Drivers control robots to score fuel while hubs alternate active/inactive based on auto outcome. Robots shuttle fuel from the neutral zone during inactive periods. 972 scores on the move from anywhere in the alliance zone at 8 BPS with full vision assist — the driver doesn't need to look at the hub.</div>
+      </div>
+      <div class="game-card reveal">
+        <div class="game-card-head">Endgame — Climb</div>
+        <div class="game-card-body">All hubs become active as time runs out, allowing all robots to score. Robots climb the tower for additional points and match bonuses. 972 typically avoids auto-climbing to maximize fuel scoring — climbing only when acting as the weaker alliance member to clear the way for stronger scorers.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Iron<em>Claw</em> 972</div>
+  <p>Los Gatos High School · FIRST Robotics Competition · 2026</p>
+  <p>Contributors: Aiden Yang · Dylan Xu</p>
+</footer>
+
+<!-- THREE.JS VIEWER — EXACT CODE PRESERVED -->
+<script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.150.1/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.150.1/examples/jsm/"
+    }
+  }
+</script>
+<script type="module">
+  import * as THREE from 'https://unpkg.com/three@0.150.1/build/three.module.js';
+  import { OrbitControls } from 'https://unpkg.com/three@0.150.1/examples/jsm/controls/OrbitControls.js';
+  import { GLTFLoader } from 'https://unpkg.com/three@0.150.1/examples/jsm/loaders/GLTFLoader.js';
+  // 1. Setup Scene, Camera, and Renderer
+  const container = document.getElementById('canvas-container');
+  const scene = new THREE.Scene();
+
+  const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+  camera.position.set(0, 3, 6);
+
+  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  container.appendChild(renderer.domElement);
+
+  // 2. Add Lighting (Crucial for metallic CAD materials)
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+  scene.add(ambientLight);
+
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  dirLight.position.set(10, 20, 10);
+  scene.add(dirLight);
+
+  // 3. Setup Orbit Controls for interaction
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.05;
+
+  // 4. Placeholder Geometry (Displays until you load your CAD)
+  const geometry = new THREE.BoxGeometry(2, 0.5, 2);
+  const material = new THREE.MeshStandardMaterial({
+    color: 0xff4500,
+    wireframe: true
+  });
+  const placeholder = new THREE.Mesh(geometry, material);
+  scene.add(placeholder);
+
+  // 5. Load the actual CAD Model
+   // UNCOMMENT THIS BLOCK ONCE YOU EXPORT YOUR .GLB FILE FROM ONSHAPE/FUSION 360
+  const loader = new GLTFLoader();
+  loader.load('models/Final.glb', function(gltf) {
+    const model = gltf.scene;
+    model.traverse(function(child) {
+      if (child.isMesh) {
+        const color = child.material.color;
+        // Target near-white materials (polycarbonate)
+        if (color.r > 0.8 && color.g > 0.8 && color.b > 0.8) {
+          child.material.transparent = true;
+          child.material.opacity = 0.3;
+          child.material.depthWrite = false;
+        }
+      }
+    });
+    scene.add(model);
+    scene.remove(placeholder); // Remove the orange box
+
+    // Calculate the size of the giant model
+    const box = new THREE.Box3().setFromObject(model);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+
+    // Auto-Center the model
+    model.position.x -= center.x;
+    model.position.y -= center.y;
+    model.position.z -= center.z;
+
+    // THE FIX: Auto-Scale the model down to web-size
+    const maxDim = Math.max(size.x, size.y, size.z);
+    if (maxDim > 0) {
+      const targetScale = 3 / maxDim; // Forces the biggest side to be exactly 3 units
+      model.scale.set(targetScale, targetScale, targetScale);
+    }
+
+  }, undefined, function(error) {
+    console.error("Three.js Error loading the model:", error);
+  });
+
+  // 6. Animation Loop
+  function animate() {
+    requestAnimationFrame(animate);
+    controls.update(); // Required for damping
+
+    // Slowly rotate the placeholder (remove if using actual CAD)
+    placeholder.rotation.y += 0.003;
+
+    renderer.render(scene, camera);
+  }
+
+  // Handle Window Resizing
+  window.addEventListener('resize', () => {
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.clientWidth, container.clientHeight);
+  });
+
+  animate();
+</script>
+
+<script>
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 70);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
