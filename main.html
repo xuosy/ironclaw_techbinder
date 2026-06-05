@@ -206,15 +206,29 @@
      // UNCOMMENT THIS BLOCK ONCE YOU EXPORT YOUR .GLB FILE FROM ONSHAPE/FUSION 360
     const loader = new GLTFLoader();
     loader.load('models/lowValV3.glb', function(gltf) {
-      scene.add(gltf.scene);
+      const model = gltf.scene;
+      scene.add(model);
       scene.remove(placeholder); // Remove the orange box
       
-      // Auto-center the model
-      const box = new THREE.Box3().setFromObject(gltf.scene);
+      // Calculate the size of the giant model
+      const box = new THREE.Box3().setFromObject(model);
       const center = box.getCenter(new THREE.Vector3());
-      gltf.scene.position.x += (gltf.scene.position.x - center.x);
-      gltf.scene.position.y += (gltf.scene.position.y - center.y);
-      gltf.scene.position.z += (gltf.scene.position.z - center.z);
+      const size = box.getSize(new THREE.Vector3());
+      
+      // Auto-Center the model
+      model.position.x -= center.x;
+      model.position.y -= center.y;
+      model.position.z -= center.z;
+      
+      // THE FIX: Auto-Scale the model down to web-size
+      const maxDim = Math.max(size.x, size.y, size.z);
+      if (maxDim > 0) {
+        const targetScale = 3 / maxDim; // Forces the biggest side to be exactly 3 units
+        model.scale.set(targetScale, targetScale, targetScale);
+      }
+      
+    }, undefined, function(error) {
+      console.error("Three.js Error loading the model:", error);
     });
     
 
